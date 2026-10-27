@@ -1,0 +1,144 @@
+{%- liquid
+  assign to_max = block.settings.to_max_chars | default: 50
+  assign from_max = block.settings.from_max_chars | default: 50
+  assign message_max = block.settings.message_max_chars | default: 200
+  assign gw_product = block.settings.gift_wrap_product
+  assign gift_wrap_variant_id = ''
+  assign raw_price = block.settings.gift_wrap_price | default: '0' | strip
+  assign gift_wrap_price = raw_price
+  assign is_free = true
+
+  if gw_product != blank and gw_product.variants.size > 0
+    assign gift_wrap_variant_id = gw_product.selected_or_first_available_variant.id
+    if gw_product.price > 0
+      assign gift_wrap_price = gw_product.price | money
+      assign is_free = false
+    endif
+  elsif raw_price != '0' and raw_price != '' and raw_price != blank
+    assign is_free = false
+    assign gift_wrap_price = cart.currency.symbol | append: raw_price
+  endif
+-%}
+
+<gift-wrap-form
+  class="tw-block tw-w-full"
+  data-product-form-id="{{ product_form_id }}"
+  data-to-max="{{ to_max }}"
+  data-from-max="{{ from_max }}"
+  data-message-max="{{ message_max }}"
+  data-price="{{ gift_wrap_price }}"
+  data-gift-wrap-variant-id="{{ gift_wrap_variant_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg tw-overflow-hidden tw-my-4">
+    <label
+      class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer tw-px-4 tw-py-3 tw-select-none hover:tw-bg-gray-50 tw-transition-colors tw-duration-200"
+      for="GiftWrapToggle-{{ block.id }}"
+    >
+      <input
+        type="checkbox"
+        id="GiftWrapToggle-{{ block.id }}"
+        class="tw-sr-only"
+        data-gift-wrap-toggle
+        aria-expanded="false"
+        aria-controls="GiftWrapFields-{{ block.id }}"
+      >
+      <span
+        class="tw-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-border tw-border-solid tw-border-gray-400 tw-rounded tw-transition-all tw-duration-200 tw-flex-shrink-0"
+        data-checkbox-visual
+        aria-hidden="true"
+      >
+        <svg class="tw-w-3 tw-h-3 tw-text-white tw-opacity-0 tw-transition-opacity tw-duration-200" data-check-icon viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="tw-flex tw-flex-col tw-gap-0.5">
+        <span class="tw-text-sm tw-font-medium tw-text-gray-900">
+          {{ 'products.gift_wrap.label' | t }}
+        </span>
+        {%- unless is_free -%}
+          <span class="tw-text-sm tw-text-gray-500">
+            {{ 'products.gift_wrap.price_label' | t: price: gift_wrap_price }}
+          </span>
+        {%- else -%}
+          <span class="tw-text-sm tw-text-gray-500">
+            {{ 'products.gift_wrap.free_label' | t }}
+          </span>
+        {%- endunless -%}
+      </span>
+    </label>
+
+    <div
+      id="GiftWrapFields-{{ block.id }}"
+      class="tw-grid tw-grid-rows-[0fr] tw-transition-[grid-template-rows] tw-duration-300 tw-ease-in-out"
+      data-gift-wrap-fields
+      aria-hidden="true"
+    >
+      <div class="tw-overflow-hidden">
+        <div class="tw-px-4 tw-pb-4 tw-pt-1 tw-space-y-3">
+          <div class="tw-flex tw-flex-col tw-gap-1">
+            <label
+              for="GiftWrapTo-{{ block.id }}"
+              class="tw-text-xs tw-font-medium tw-text-gray-700"
+            >
+              {{ 'products.gift_wrap.to_label' | t }}
+            </label>
+            <input
+              type="text"
+              id="GiftWrapTo-{{ block.id }}"
+              class="tw-w-full tw-rounded tw-border tw-border-solid tw-border-gray-300 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 tw-outline-none tw-transition-colors tw-duration-200 focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+              maxlength="{{ to_max }}"
+              placeholder="{{ 'products.gift_wrap.to_placeholder' | t }}"
+              data-gift-wrap-to
+              autocomplete="off"
+            >
+            <span class="tw-text-xs tw-text-gray-400 tw-text-right" data-char-count="to">
+              0 / {{ to_max }}
+            </span>
+          </div>
+
+          <div class="tw-flex tw-flex-col tw-gap-1">
+            <label
+              for="GiftWrapFrom-{{ block.id }}"
+              class="tw-text-xs tw-font-medium tw-text-gray-700"
+            >
+              {{ 'products.gift_wrap.from_label' | t }}
+            </label>
+            <input
+              type="text"
+              id="GiftWrapFrom-{{ block.id }}"
+              class="tw-w-full tw-rounded tw-border tw-border-solid tw-border-gray-300 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 tw-outline-none tw-transition-colors tw-duration-200 focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+              maxlength="{{ from_max }}"
+              placeholder="{{ 'products.gift_wrap.from_placeholder' | t }}"
+              data-gift-wrap-from
+              autocomplete="off"
+            >
+            <span class="tw-text-xs tw-text-gray-400 tw-text-right" data-char-count="from">
+              0 / {{ from_max }}
+            </span>
+          </div>
+
+          <div class="tw-flex tw-flex-col tw-gap-1">
+            <label
+              for="GiftWrapMessage-{{ block.id }}"
+              class="tw-text-xs tw-font-medium tw-text-gray-700"
+            >
+              {{ 'products.gift_wrap.message_label' | t }}
+            </label>
+            <textarea
+              id="GiftWrapMessage-{{ block.id }}"
+              class="tw-w-full tw-rounded tw-border tw-border-solid tw-border-gray-300 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 tw-outline-none tw-transition-colors tw-duration-200 tw-resize-none focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+              rows="3"
+              maxlength="{{ message_max }}"
+              placeholder="{{ 'products.gift_wrap.message_placeholder' | t }}"
+              data-gift-wrap-message
+            ></textarea>
+            <span class="tw-text-xs tw-text-gray-400 tw-text-right" data-char-count="message">
+              0 / {{ message_max }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</gift-wrap-form>

@@ -38,6 +38,16 @@
           "type": "quantity_selector",
           "settings": {}
         },
+        "gift_wrapping": {
+          "type": "gift_wrapping",
+          "settings": {
+            "to_max_chars": 50,
+            "from_max_chars": 50,
+            "message_max_chars": 200,
+            "gift_wrap_product": "",
+            "gift_wrap_price": "78"
+          }
+        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
@@ -62,6 +72,7 @@
         "price",
         "variant_picker",
         "quantity_selector",
+        "gift_wrapping",
         "buy_buttons",
         "description",
         "share"
@@ -85,6 +96,10 @@
     "disclosures": {
       "type": "disclosures",
       "settings": {
+        "heading": "Disclosures",
+        "heading_size": "h2",
+        "open_by_default": false,
+        "color_scheme": "",
         "padding_top": 36,
         "padding_bottom": 0
       }

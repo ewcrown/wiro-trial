@@ -1,0 +1,19 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  prefix: 'tw-',
+  corePlugins: {
+    preflight: false,
+  },
+  content: [
+    './layout/*.liquid',
+    './templates/*.liquid',
+    './templates/*.json',
+    './sections/*.liquid',
+    './snippets/*.liquid',
+    './assets/*.js',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};

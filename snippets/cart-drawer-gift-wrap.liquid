@@ -1,0 +1,181 @@
+{%- liquid
+  assign gift_wrap_prop = item.properties['Gift Wrap']
+  assign to_prop = item.properties['To']
+  assign from_prop = item.properties['From']
+  assign message_prop = item.properties['Gift Message']
+  assign price_prop = item.properties['_Gift Wrap Price']
+  assign gw_id = item.properties['_gift_wrap_id']
+
+  assign has_gift_wrap = false
+  if gift_wrap_prop != blank or item.properties['Wrap as a gift'] != blank or connected_item != null
+    assign has_gift_wrap = true
+  endif
+
+  assign price_display = ''
+  if connected_item != null
+    assign gw_price = connected_item.final_price
+    if gw_price > 0
+      assign gw_price_formatted = gw_price | money
+      assign price_display = '(+' | append: gw_price_formatted | append: ')'
+    else
+      assign price_display = '(Free)'
+    endif
+  elsif price_prop != blank and price_prop != '0' and price_prop != ''
+    assign price_display = '(+'  | append: price_prop | append: ')'
+  endif
+-%}
+
+<cart-gift-wrap
+  class="tw-block tw-w-full tw-my-1"
+  data-line-key="{{ item.key }}"
+  data-line-index="{{ line_index }}"
+  data-quantity="{{ item.quantity }}"
+  data-gift-wrap-id="{{ gw_id }}"
+  data-connected-key="{% if connected_item != null %}{{ connected_item.key }}{% endif %}"
+  data-has-gift-wrap="{% if has_gift_wrap %}true{% else %}false{% endif %}"
+  data-price="{{ price_prop }}"
+>
+  <div class="tw-bg-[#F7F7F7] tw-rounded-lg tw-p-4 tw-text-left tw-border tw-border-solid tw-border-transparent">
+    {%- if has_gift_wrap -%}
+      <div data-view-mode class="tw-block">
+        <div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
+          <div class="tw-flex tw-items-center tw-gap-2.5">
+            <span
+              class="tw-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-bg-[#1E1E1E] tw-rounded tw-flex-shrink-0"
+              aria-hidden="true"
+            >
+              <svg class="tw-w-3 tw-h-3 tw-text-white" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="tw-text-sm tw-font-medium tw-text-gray-900">
+              Wrap as a gift?{% if price_display != blank %} {{ price_display }}{% endif %}
+            </span>
+          </div>
+          <button
+            type="button"
+            data-edit-button
+            class="tw-inline-flex tw-items-center tw-gap-1 tw-text-sm tw-font-medium tw-text-gray-900 tw-underline hover:tw-text-gray-600 tw-cursor-pointer tw-bg-transparent tw-border-0 tw-p-0"
+          >
+            <span>Edit</span>
+            <svg class="tw-w-3.5 tw-h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11.5 2.5a2.121 2.121 0 0 1 3 3L5 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+
+        {%- capture summary_text -%}
+          {%- assign parts = '' -%}
+          {%- if to_prop != blank -%}
+            {%- assign parts = parts | append: 'To: ' | append: to_prop -%}
+          {%- endif -%}
+          {%- if from_prop != blank -%}
+            {%- if parts != blank %}{% assign parts = parts | append: ' / ' %}{% endif -%}
+            {%- assign parts = parts | append: 'From: ' | append: from_prop -%}
+          {%- endif -%}
+          {%- if message_prop != blank -%}
+            {%- if parts != blank %}{% assign parts = parts | append: ' / ' %}{% endif -%}
+            {%- assign parts = parts | append: '“' | append: message_prop | append: '”' -%}
+          {%- endif -%}
+          {{ parts }}
+        {%- endcapture -%}
+
+        {%- if summary_text != blank -%}
+          <div class="tw-mt-2.5 tw-text-sm tw-text-gray-600 tw-leading-relaxed" data-summary-text>
+            {{ summary_text }}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div data-edit-mode class="{% if has_gift_wrap %}tw-hidden{% endif %}">
+      <div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
+        <label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer tw-select-none">
+          <input
+            type="checkbox"
+            class="tw-sr-only"
+            data-cart-gift-wrap-toggle
+            {% if has_gift_wrap %}checked{% endif %}
+          >
+          <span
+            class="tw-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-rounded tw-border tw-border-solid {% if has_gift_wrap %}tw-bg-[#1E1E1E] tw-border-[#1E1E1E]{% else %}tw-border-gray-400 tw-bg-white{% endif %} tw-transition-colors tw-flex-shrink-0"
+            data-checkbox-box
+            aria-hidden="true"
+          >
+            <svg class="tw-w-3 tw-h-3 tw-text-white {% unless has_gift_wrap %}tw-opacity-0{% endunless %}" data-check-icon viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="tw-text-sm tw-font-medium tw-text-gray-900">
+            Wrap as a gift?{% if price_display != blank %} {{ price_display }}{% endif %}
+          </span>
+        </label>
+        {%- if has_gift_wrap -%}
+          <button
+            type="button"
+            data-cancel-button
+            class="tw-inline-flex tw-items-center tw-gap-1 tw-text-sm tw-font-medium tw-text-gray-900 tw-underline hover:tw-text-gray-600 tw-cursor-pointer tw-bg-transparent tw-border-0 tw-p-0"
+          >
+            <span>Cancel</span>
+            <svg class="tw-w-3.5 tw-h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="4" x2="4" y2="12"></line>
+              <line x1="4" y1="4" x2="12" y2="12"></line>
+            </svg>
+          </button>
+        {%- endif -%}
+      </div>
+
+      <div data-form-fields class="tw-mt-3 tw-space-y-3 {% unless has_gift_wrap %}tw-hidden{% endunless %}">
+        <div>
+          <label class="tw-block tw-text-sm tw-font-medium tw-text-gray-900 tw-mb-1">
+            To
+          </label>
+          <input
+            type="text"
+            data-input-to
+            value="{{ to_prop | escape }}"
+            placeholder="Recipient's name"
+            class="tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-gray-300 tw-bg-white tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-gray-900 tw-outline-none focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+          >
+        </div>
+
+        <div>
+          <label class="tw-block tw-text-sm tw-font-medium tw-text-gray-900 tw-mb-1">
+            From
+          </label>
+          <input
+            type="text"
+            data-input-from
+            value="{{ from_prop | escape }}"
+            placeholder="Your name"
+            class="tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-gray-300 tw-bg-white tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-gray-900 tw-outline-none focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+          >
+        </div>
+
+        <div>
+          <label class="tw-block tw-text-sm tw-font-medium tw-text-gray-900 tw-mb-1">
+            Gift message
+          </label>
+          <textarea
+            data-input-message
+            rows="3"
+            placeholder="Write a personal message..."
+            class="tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-gray-300 tw-bg-white tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-gray-900 tw-outline-none tw-resize-none focus:tw-border-gray-900 focus:tw-ring-1 focus:tw-ring-gray-900"
+          >{{ message_prop }}</textarea>
+        </div>
+
+        <button
+          type="button"
+          data-update-button
+          class="tw-w-full tw-mt-4 tw-py-3 tw-px-4 tw-bg-[#1E1E1E] hover:tw-bg-black tw-text-white tw-text-sm tw-font-medium tw-rounded-md tw-transition-colors tw-cursor-pointer tw-flex tw-items-center tw-justify-center tw-gap-2 disabled:tw-opacity-60 disabled:tw-cursor-not-allowed"
+        >
+          <span data-button-text>Update</span>
+          <svg data-loading-spinner class="tw-hidden tw-animate-spin tw-h-4 tw-w-4 tw-text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="tw-opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="tw-opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</cart-gift-wrap>

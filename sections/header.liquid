@@ -299,6 +299,15 @@
         {%- endcase -%}
       {%- endfor -%}
 
+      {%- liquid
+        assign visible_item_count = 0
+        for item in cart.items
+          if item.properties['_is_gift_wrap'] == 'true' or item.product.handle == 'gift-wrap-product'
+            continue
+          endif
+          assign visible_item_count = visible_item_count | plus: item.quantity
+        endfor
+      -%}
       <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
         {% if cart == empty %}
           <span class="svg-wrapper">{{ 'icon-cart-empty.svg' | inline_asset_content }}</span>
@@ -306,12 +315,12 @@
           <span class="svg-wrapper">{{ 'icon-cart.svg' | inline_asset_content }}</span>
         {% endif %}
         <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
-        {%- if cart != empty -%}
+        {%- if visible_item_count > 0 -%}
           <div class="cart-count-bubble">
-            {%- if cart.item_count < 100 -%}
-              <span aria-hidden="true">{{ cart.item_count }}</span>
+            {%- if visible_item_count < 100 -%}
+              <span aria-hidden="true">{{ visible_item_count }}</span>
             {%- endif -%}
-            <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+            <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: visible_item_count }}</span>
           </div>
         {%- endif -%}
       </a>

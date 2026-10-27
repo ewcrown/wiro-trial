@@ -488,6 +488,12 @@
                     block: block,
                     product_form_id: product_form_id
                   %}
+                {%- when 'gift_wrapping' -%}
+                  <script src="{{ 'gift-wrap-form.js' | asset_url }}" defer="defer"></script>
+                  {%- render 'gift-wrap-form',
+                    block: block,
+                    product_form_id: product_form_id
+                  -%}
                 {%- when 'buy_buttons' -%}
                   {%- render 'buy-buttons',
                     block: block,
@@ -916,6 +922,53 @@
             }
           ],
           "default": "circle"
+        }
+      ]
+    },
+    {
+      "type": "gift_wrapping",
+      "name": "Gift wrapping",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "range",
+          "id": "to_max_chars",
+          "label": "\"To\" character limit",
+          "min": 10,
+          "max": 200,
+          "step": 10,
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "from_max_chars",
+          "label": "\"From\" character limit",
+          "min": 10,
+          "max": 200,
+          "step": 10,
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "message_max_chars",
+          "label": "Gift message character limit",
+          "min": 50,
+          "max": 500,
+          "step": 10,
+          "default": 200
+        },
+        {
+          "type": "product",
+          "id": "gift_wrap_product",
+          "label": "Gift wrap product",
+          "info": "Select the product created for gift wrapping charges."
+        },
+        {
+          "type": "text",
+          "id": "gift_wrap_price",
+          "label": "Gift wrapping price",
+          "info": "Enter 0 or leave blank for free gift wrapping. Use your store currency format (e.g. 5.00).",
+          "default": "0"
         }
       ]
     },

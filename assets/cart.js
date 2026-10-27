@@ -2,10 +2,49 @@ class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
 
-    this.addEventListener('click', (event) => {
+    this.addEventListener('click', async (event) => {
       event.preventDefault();
+
+      const lineKey = this.dataset.lineKey;
+      const connectedKey = this.dataset.connectedKey;
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
-      cartItems.updateQuantity(this.dataset.index, 0, event);
+
+      if (lineKey) {
+        const updates = { [lineKey]: 0 };
+        if (connectedKey) updates[connectedKey] = 0;
+
+        try {
+          const res = await fetch(window.routes?.cart_update_url || '/cart/update.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ updates })
+          });
+          await res.json();
+        } catch (err) {
+          console.error(err);
+        } finally {
+          cartItems?.onCartUpdate();
+        }
+        return;
+      }
+
+      if (connectedKey) {
+        try {
+          const res = await fetch(window.routes?.cart_update_url || '/cart/update.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ updates: { [connectedKey]: 0 } })
+          });
+          await res.json();
+        } catch (err) {
+          console.error(err);
+        } finally {
+          cartItems?.updateQuantity(this.dataset.index, 0, event);
+        }
+        return;
+      }
+
+      cartItems?.updateQuantity(this.dataset.index, 0, event);
     });
   }
 }
@@ -128,12 +167,21 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
           console.error(e);
         });
     } else {
-      return fetch(`${routes.cart_url}?section_id=main-cart-items`)
-        .then((response) => response.text())
-        .then((responseText) => {
-          const html = new DOMParser().parseFromString(responseText, 'text/html');
-          const sourceQty = html.querySelector('cart-items');
-          this.innerHTML = sourceQty.innerHTML;
+      const sectionsData = this.getSectionsToRender();
+      const sectionIds = sectionsData.map((s) => s.section).filter(Boolean);
+      return fetch(`${routes.cart_url}?sections=${sectionIds.join(',')}`)
+        .then((response) => response.json())
+        .then((data) => {
+          sectionsData.forEach((section) => {
+            const sectionHtml = data[section.section];
+            if (!sectionHtml) return;
+            const container = document.getElementById(section.id);
+            if (!container) return;
+            const target = container.querySelector(section.selector) || container;
+            const parsed = new DOMParser().parseFromString(sectionHtml, 'text/html');
+            const source = section.selector ? parsed.querySelector(section.selector) : parsed.body;
+            if (target && source) target.innerHTML = source.innerHTML;
+          });
         })
         .catch((e) => {
           console.error(e);

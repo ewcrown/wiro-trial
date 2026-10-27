@@ -190,6 +190,23 @@
       "duties_and_taxes_included": "Duties and taxes included.",
       "shipping_policy_html": "<a href=\"{{ link }}\">Shipping</a> calculated at checkout."
     },
+    "gift_wrap": {
+      "label": "Add gift wrapping",
+      "free_label": "Free",
+      "price_label": "+ {{ price }}",
+      "to_label": "To",
+      "to_placeholder": "Recipient's name",
+      "from_label": "From",
+      "from_placeholder": "Your name",
+      "message_label": "Gift message",
+      "message_placeholder": "Write a personal message...",
+      "cart_gift_wrap": "Gift wrapped",
+      "cart_to": "To",
+      "cart_from": "From",
+      "cart_message": "Message",
+      "cart_edit": "Edit",
+      "cart_remove": "Remove gift wrap"
+    },
     "modal": {
       "label": "Media gallery"
     },

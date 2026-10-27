@@ -122,6 +122,19 @@
 
                   <tbody role="rowgroup">
                     {%- for item in cart.items -%}
+                      {%- if item.properties['_is_gift_wrap'] == 'true' or item.product.handle == 'gift-wrap-product' -%}
+                        {%- continue -%}
+                      {%- endif -%}
+                      {%- assign item_gw_id = item.properties['_gift_wrap_id'] -%}
+                      {%- assign connected_gw_item = null -%}
+                      {%- if item_gw_id != blank -%}
+                        {%- for gw_candidate in cart.items -%}
+                          {%- if gw_candidate.properties['_gift_wrap_parent'] == item_gw_id -%}
+                            {%- assign connected_gw_item = gw_candidate -%}
+                            {%- break -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      {%- endif -%}
                       <tr
                         id="CartDrawer-Item-{{ item.index | plus: 1 }}"
                         class="cart-item{% if item.parent_relationship.parent != null %} cart-item__nested-line{% endif %}"
@@ -205,7 +218,7 @@
 
                               {%- for property in item.properties -%}
                                 {%- assign property_first_char = property.first | slice: 0 -%}
-                                {%- if property.last != blank and property_first_char != '_' -%}
+                                {%- if property.last != blank and property_first_char != '_' and property.first != 'Gift Wrap' and property.first != 'To' and property.first != 'From' and property.first != 'Gift Message' -%}
                                   <div class="product-option">
                                     <dt>{{ property.first }}:</dt>
                                     <dd>
@@ -360,6 +373,10 @@
                               <cart-remove-button
                                 id="CartDrawer-Remove-{{ item.index | plus: 1 }}"
                                 data-index="{{ item.index | plus: 1 }}"
+                                data-line-key="{{ item.key }}"
+                                {% if connected_gw_item != null %}
+                                  data-connected-key="{{ connected_gw_item.key }}"
+                                {% endif %}
                               >
                                 <button
                                   type="button"
@@ -472,6 +489,9 @@
                               </span>
                             </div>
                           </quantity-popover>
+                        </td>
+                        <td class="cart-item__gift-wrap tw-col-span-full tw-col-start-1 tw-pt-1 !tw-pl-0 tw-w-full" colspan="4" style="grid-column: 1 / -1; padding-left: 0;">
+                          {% render 'cart-drawer-gift-wrap', item: item, connected_item: connected_gw_item, line_index: forloop.index %}
                         </td>
                       </tr>
                     {%- endfor -%}

@@ -82,6 +82,19 @@
 
               <tbody>
                 {%- for item in cart.items -%}
+                  {%- if item.properties['_is_gift_wrap'] == 'true' or item.product.handle == 'gift-wrap-product' -%}
+                    {%- continue -%}
+                  {%- endif -%}
+                  {%- assign item_gw_id = item.properties['_gift_wrap_id'] -%}
+                  {%- assign connected_gw_item = null -%}
+                  {%- if item_gw_id != blank -%}
+                    {%- for gw_candidate in cart.items -%}
+                      {%- if gw_candidate.properties['_gift_wrap_parent'] == item_gw_id -%}
+                        {%- assign connected_gw_item = gw_candidate -%}
+                        {%- break -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
                   <tr
                     class="cart-item {% if item.parent_relationship.parent != null %}cart-item__nested-line{% endif %}"
                     id="CartItem-{{ item.index | plus: 1 }}"
@@ -157,7 +170,7 @@
 
                           {%- for property in item.properties -%}
                             {%- assign property_first_char = property.first | slice: 0 -%}
-                            {%- if property.last != blank and property_first_char != '_' -%}
+                            {%- if property.last != blank and property_first_char != '_' and property.first != 'Gift Wrap' and property.first != 'To' and property.first != 'From' and property.first != 'Gift Message' -%}
                               <div class="product-option">
                                 <dt>{{ property.first }}:</dt>
                                 <dd>
@@ -185,6 +198,8 @@
                           </li>
                         {%- endfor -%}
                       </ul>
+
+                      {% render 'cart-drawer-gift-wrap', item: item, connected_item: connected_gw_item, line_index: forloop.index %}
                     </td>
 
                     <td class="cart-item__totals right medium-hide large-up-hide">
@@ -303,6 +318,10 @@
                           <cart-remove-button
                             id="Remove-{{ item.index | plus: 1 }}"
                             data-index="{{ item.index | plus: 1 }}"
+                            data-line-key="{{ item.key }}"
+                            {% if connected_gw_item != null %}
+                              data-connected-key="{{ connected_gw_item.key }}"
+                            {% endif %}
                             {% assign can_remove = item.instructions.can_remove | default: true %}
                             {% if can_remove == false %}
                               class="hidden"
